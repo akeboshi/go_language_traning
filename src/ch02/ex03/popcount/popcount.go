@@ -28,3 +28,15 @@ func PopCountLoopVer(x uint64) int {
 	}
 	return int(sum)
 }
+
+// PopCountLoopVer は for文を用いたPopCountです
+func PopCountCheck64(x uint64) int {
+	var sum int
+	for i := 0; i < 64; i++ {
+		if x&1 == 1 {
+			sum++
+		}
+		x >>= 1
+	}
+	return int(sum)
+}
