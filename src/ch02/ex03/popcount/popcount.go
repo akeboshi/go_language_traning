@@ -29,7 +29,7 @@ func PopCountLoopVer(x uint64) int {
 	return int(sum)
 }
 
-// PopCountLoopVer は for文を用いたPopCountです
+// PopCountCheck64 は for文で64回ビットチェックするPopCountです
 func PopCountCheck64(x uint64) int {
 	var sum int
 	for i := 0; i < 64; i++ {
@@ -38,5 +38,15 @@ func PopCountCheck64(x uint64) int {
 		}
 		x >>= 1
 	}
-	return int(sum)
+	return sum
+}
+
+// PopCountClearBit は最下位ビットをクリアした回数を数えるPopCountです
+func PopCountClearBit(x uint64) int {
+	sum := 0
+	for x > 0 {
+		x = x & (x - 1)
+		sum++
+	}
+	return sum
 }
