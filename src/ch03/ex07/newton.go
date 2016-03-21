@@ -20,20 +20,19 @@ func main() {
 		for px := 0; px < width; px++ {
 			x := float64(px)/width*(xmax-xmin) + xmin
 			z := complex(x, y)
-			img.Set(px, py, mandelbrot(z))
+			img.Set(px, py, newton(z))
 		}
 	}
 	png.Encode(os.Stdout, img)
 }
 
-func mandelbrot(z complex128) color.Color {
+func newton(z complex128) color.Color {
 	const iterations = 200
 	const contrast = 15
 
-	var v complex128
-	for n := uint8(0); n < iterations; n++ {
-		v = v*v + z
-		if cmplx.Abs(v) > 2 {
+	for n := uint(0); n < iterations; n++ {
+		z = z - ((z*z*z*z - 1) / (4 * z * z * z))
+		if cmplx.Abs(z*z*z*z-1) < 1e-3 {
 			r := 255 - contrast*n
 			g := 255 - r
 			b := 0

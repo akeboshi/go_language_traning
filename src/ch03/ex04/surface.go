@@ -43,17 +43,6 @@ func getColorQuery(word string, defaultVal string) string {
 	return defaultVal
 }
 
-func getIntQuery(word string, defaultVal int) int {
-	if word == "" {
-		return defaultVal
-	}
-	val, err := strconv.Atoi(word)
-	if err != nil {
-		return defaultVal
-	}
-	return val
-}
-
 func getFloat64Query(word string, defaultVal float64) float64 {
 	if word == "" {
 		return defaultVal
