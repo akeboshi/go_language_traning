@@ -18,6 +18,7 @@ func TestPopcount(t *testing.T) {
 		popCountAssert(t, "PopCountLoopVer", popcount.PopCountLoopVer, input, expected)
 		popCountAssert(t, "PopCountCheck64", popcount.PopCountCheck64, input, expected)
 		popCountAssert(t, "PopCountClearBit", popcount.PopCountClearBit, input, expected)
+		popCountAssert(t, "PopCountHackers", popcount.PopCountHackers, input, 3)
 	}
 }
 
