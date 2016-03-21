@@ -5,7 +5,6 @@ import (
 	"image/color"
 	"image/png"
 	"math/cmplx"
-	"os"
 )
 
 func main() {
@@ -23,7 +22,7 @@ func main() {
 			img.Set(px, py, mandelbrot(z))
 		}
 	}
-	png.Encode(os.Stdout, superSampling(img))
+	png.Encode(img)
 }
 
 func mandelbrot(z complex128) color.Color {
@@ -41,36 +40,4 @@ func mandelbrot(z complex128) color.Color {
 		}
 	}
 	return color.RGBA{0, 0, 255, 255}
-}
-
-// FIXME: 何が正しいのか不明
-func superSampling(source image.Image) image.Image {
-	img := image.NewRGBA(source.Bounds())
-	for py := 0; py < img.Rect.Dy(); py++ {
-		for px := 0; px < img.Rect.Dx(); px++ {
-			img.Set(px, py, average(source, px, py))
-		}
-	}
-	return img
-}
-
-func average(source image.Image, px, py int) color.Color {
-	var colors [5]color.Color
-	colors[0] = source.At(px-1, py-1)
-	colors[1] = source.At(px-1, py)
-	colors[2] = source.At(px, py)
-	colors[3] = source.At(px+1, py)
-	colors[4] = source.At(px+1, py+1)
-
-	var resultR, resultG, resultB uint32
-	for _, color := range colors {
-		r, g, b, _ := color.RGBA()
-		resultR += r
-		resultG += g
-		resultB += b
-	}
-	resultR /= 5
-	resultG /= 5
-	resultB /= 5
-	return color.RGBA{uint8(resultR), uint8(resultG), uint8(resultB), 255}
 }
