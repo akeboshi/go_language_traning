@@ -1,22 +1,40 @@
 package main
 
-import "unicode"
+import (
+	"unicode"
+	"unicode/utf8"
+)
 
 func main() {
-	runes := []rune("あい　うえお")
-
-	println(string(runes))
-	println(string(unicodeSpaceToASCIISpace(runes)))
+	str := []byte("あい　うえお")
+	println(string(str))
+	println(string(unicodeSpaceToASCIISpace(str)))
 }
 
-func unicodeSpaceToASCIISpace(str []rune) []rune {
-	var result []rune
-	for _, r := range str {
-		if unicode.IsSpace(r) {
+func unicodeSpaceToASCIISpace(str []byte) []byte {
+	var result []byte
+	for i := 0; i < len(str); i++ {
+		charLen := unicodeCharBytes(str[i])
+		bStr := str[i : i+charLen]
+		i += charLen - 1
+		uStr, _ := utf8.DecodeRune(bStr)
+		if unicode.IsSpace(uStr) {
 			result = append(result, ' ')
 		} else {
-			result = append(result, r)
+			result = append(result, bStr...)
 		}
 	}
 	return result
+}
+
+func unicodeCharBytes(char byte) int {
+	if char < 192 {
+		return 1
+	} else if char < 224 {
+		return 2
+	} else if char < 240 {
+		return 3
+	} else {
+		return 4
+	}
 }
