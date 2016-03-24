@@ -14,6 +14,7 @@ type IssueRequest struct {
 	Title     string   `json:"title,omitempty"`
 	Body      string   `json:"body,omitempty"`
 	Assignee  string   `json:"assignee,omitempty"`
+	State     string   `json:"state,omitempty"`
 	Milestone int      `json:"milestone,omitempty"`
 	Label     []string `json:"label,omitempty"`
 }
@@ -25,7 +26,7 @@ type Issue struct {
 	State     string
 	User      *User
 	CreatedAt time.Time `json:"created_at"`
-	Body      string    // markdown format
+	Body      string
 }
 
 type User struct {

@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strconv"
 )
 
 func main() {
@@ -28,15 +29,29 @@ func create() {
 }
 
 func update() {
-	println("u")
+	var issue github.IssueRequest
+	num, err := strconv.Atoi(editLine("Number of Issue"))
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	issue.Title = editLine("Title")
+	issue.Body = editMessage("vim", "Body")
+	if issue.Title == "" || issue.Body == "" {
+		println("TitleとBodyを入力しておいてください")
+		os.Exit(1)
+	}
+	issue.State = editLine("State(open or closed)")
+	result := github.UpdateIssue(num, issue)
+	fmt.Println(result.HTMLURL)
 }
 
 func read() {
-	println("r")
+	println("not supported yet")
 }
 
 func delete() {
-	println("d")
+	println("not supported yet")
 }
 
 func printIssue(issue *github.IssuesSearchResult) {
