@@ -54,10 +54,6 @@ func delete() {
 	println("not supported yet")
 }
 
-func printIssue(issue *github.IssuesSearchResult) {
-
-}
-
 func selectFeature() string {
 	var f [4]*bool
 	flagName := [4]string{"c", "r", "u", "d"}
