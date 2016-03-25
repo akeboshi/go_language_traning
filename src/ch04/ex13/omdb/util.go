@@ -59,5 +59,6 @@ func WritePoster(url string, filename string) bool {
 		println(err.Error())
 		return false
 	}
+	println("saved: /tmp/" + filename)
 	return true
 }

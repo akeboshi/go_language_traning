@@ -6,12 +6,14 @@ import (
 )
 
 func main() {
+	if len(os.Args) < 2 {
+		println("Please input movie's title")
+		os.Exit(1)
+	}
 	movie := omdb.SearchMovie(os.Args[1])
-	println(movie.Title)
-	println(movie.Poster)
 
-	// omdbに寄付する必要がある？
-	// omdb.WritePoster(movie.Poster, movie.Title)
-	// omdbから画像がとれないから、とりあえず、ミク画像でも。
-	omdb.WritePoster("https://vocadb.net/EntryImg/Artist/488.png", "miku.png")
+	println("Title:\t" + movie.Title)
+	println("URL:\t" + movie.Poster)
+
+	omdb.WritePoster(movie.Poster, movie.Title+".png")
 }
