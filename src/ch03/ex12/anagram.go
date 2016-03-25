@@ -10,8 +10,13 @@ func main() {
 	str := "anagram"
 	str2 := "aaangrm"
 	nonStr := "ahagram"
+	str3 := "あいう"
+	str4 := "うあい"
+	str5 := "ああう"
 	fmt.Println(anagram(str, str2))
 	fmt.Println(anagram(str, nonStr))
+	fmt.Println(anagram(str3, str4))
+	fmt.Println(anagram(str3, str5))
 }
 
 func anagramByte(str1, str2 string) bool {
@@ -37,9 +42,8 @@ func anagram(str1, str2 string) bool {
 	if n1 != n2 {
 		return false
 	}
-	for i := 0; i < n1; i++ {
-		s := str1[i : i+1]
-		if strings.Count(str1, s) != strings.Count(str2, s) {
+	for _, s := range str1 {
+		if strings.Count(str1, string(s)) != strings.Count(str2, string(s)) {
 			return false
 		}
 	}
