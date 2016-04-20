@@ -45,9 +45,7 @@ func (s *IntSet) IntersectWith(t *IntSet) {
 func (s *IntSet) DifferenceWith(t *IntSet) {
 	for i, tword := range t.words {
 		if i < len(s.words) {
-			s.words[i] &^= tword //xor
-		} else {
-			s.words = append(s.words, uint(0)&^tword)
+			s.words[i] &^= tword
 		}
 	}
 }
@@ -63,13 +61,13 @@ func (s *IntSet) Elems() (list []int) {
 	return list
 }
 
-// (1,1)->0, (1,0)->0 (0,1)->0 (0,0)->1
+// (1,1)->0, (1,0)->1 (0,1)->1 (0,0)->0
 func (s *IntSet) SymmetricDifference(t *IntSet) {
 	for i, tword := range t.words {
 		if i < len(s.words) {
-			s.words[i] = (s.words[i] | tword) ^ 1 // (0,0)の時のみ1
+			s.words[i] = s.words[i] ^ tword
 		} else {
-			s.words = append(s.words, ^tword) // 0
+			s.words = append(s.words, tword)
 		}
 	}
 }
@@ -121,7 +119,7 @@ func (s *IntSet) Clear() {
 }
 
 func (s *IntSet) Copy() *IntSet {
-	cloneWords := []uint{}
+	cloneWords := make([]uint, len(s.words))
 	copy(cloneWords, s.words)
 	return &IntSet{cloneWords}
 }
