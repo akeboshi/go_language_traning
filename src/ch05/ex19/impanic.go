@@ -5,9 +5,9 @@ func main() {
 }
 
 func impanic() (a int) {
+	a = 1
 	defer func() {
 		recover()
-		a = 1
 	}()
 	panic(0)
 }

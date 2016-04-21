@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -8,7 +9,11 @@ import (
 )
 
 func main() {
-
+	local, n, err := fetch("https://golang.org/")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+	}
+	fmt.Printf("%s: %d byte\n", local, n)
 }
 
 func fetch(url string) (filename string, n int64, err error) {
@@ -26,6 +31,7 @@ func fetch(url string) (filename string, n int64, err error) {
 	if err != nil {
 		return "", 0, err
 	}
+
 	defer func() {
 		if err == nil {
 			err = f.Close()
