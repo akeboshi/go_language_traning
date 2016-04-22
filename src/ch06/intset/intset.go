@@ -111,7 +111,7 @@ func (s *IntSet) Remove(x int) {
 	if word >= len(s.words) {
 		return
 	}
-	s.words[word] &= 0 << bit
+	s.words[word] &^= 1 << bit
 }
 
 func (s *IntSet) Clear() {

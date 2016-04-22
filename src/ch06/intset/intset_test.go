@@ -131,11 +131,11 @@ func TestRemove(t *testing.T) {
 	data.Add(0)
 	data.Add(bitSize)
 	data.Add(bitSize / 2)
-	data.Remove(bitSize)
+	data.Remove(bitSize / 2)
 	checkInt(2, data.Len(), "Removed{0,bitSize}", t)
 	checkTrues("Removed{0,bitSize}", t,
 		data.Has(0),
-		data.Has(bitSize/2))
+		data.Has(bitSize))
 }
 
 func TestCopy(t *testing.T) {
