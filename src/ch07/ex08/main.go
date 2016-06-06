@@ -43,9 +43,9 @@ func main() {
 		{"Ready 2 Go", "Martin Solveig", "Smash", 2011, length("4m24s")},
 	}
 
-	sortList := []func(x, y *sorting.Track) int{
-		sorting.SortAlgs["Title"],
-		sorting.SortAlgs["Year"],
+	sortList := []string{
+		"Title",
+		"Year",
 	}
 
 	sort.Sort(sorting.CustomSort{
