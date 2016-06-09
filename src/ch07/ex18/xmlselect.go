@@ -20,7 +20,6 @@ type Element struct {
 
 func main() {
 	dec := xml.NewDecoder(os.Stdin)
-	var root Node
 	var stack []*Element
 	for {
 		tok, err := dec.Token()
@@ -35,25 +34,22 @@ func main() {
 			element := Element{
 				tok.Name, tok.Attr, nil,
 			}
-			if root == nil {
-				root = &element
-			}
 			stack = append(stack, &element)
 		case xml.EndElement:
 			if len(stack) > 1 { // rootではやらない
 				child := stack[len(stack)-1]
 				parent := stack[len(stack)-2]
 				parent.Children = append(parent.Children, child)
+				stack = stack[:len(stack)-1]
 			}
-			stack = stack[:len(stack)-1]
 		case xml.CharData:
-			if len(stack) > 0 { // rootではやらない
+			if len(stack) > 1 { // rootではやらない
 				parent := stack[len(stack)-1]
 				parent.Children = append(parent.Children, CharData(tok))
 			}
 		}
 	}
-	printTree(root, 0)
+	printTree(stack[0], 0)
 }
 
 func printTree(n Node, width int) {
