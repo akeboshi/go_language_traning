@@ -70,7 +70,7 @@ func printTree(n Node, width int) {
 			fmt.Println(nnn)
 		}
 	default:
-		panic(fmt.Sprintf("invalid type:%q\n", n))
+		panic(fmt.Sprintf("invalid type:%T\n", n))
 	}
 }
 
