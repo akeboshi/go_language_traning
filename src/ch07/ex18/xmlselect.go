@@ -75,9 +75,6 @@ func printTree(n Node, width int) {
 }
 
 func printAttr(attr []xml.Attr) {
-	if len(attr) == 0 {
-		return
-	}
 	for _, a := range attr {
 		fmt.Printf(" %s=\"%s\"", a.Name.Local, a.Value)
 	}
