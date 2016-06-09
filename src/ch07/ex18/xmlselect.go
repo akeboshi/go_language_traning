@@ -31,10 +31,9 @@ func main() {
 		}
 		switch tok := tok.(type) {
 		case xml.StartElement:
-			element := Element{
+			stack = append(stack, &Element{
 				tok.Name, tok.Attr, nil,
-			}
-			stack = append(stack, &element)
+			})
 		case xml.EndElement:
 			if len(stack) > 1 { // rootではやらない
 				child := stack[len(stack)-1]
