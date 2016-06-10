@@ -5,3 +5,4 @@ pkg/*
 src/playroom/*
 src/github.com/*
 src/golang.org/*
+src/gopl.io/*
