@@ -1,3 +1,4 @@
+//Copyright (c) 2016 by akeboshi. All Rights Reserved.
 package main
 
 import "ch07/ex03/treesort"

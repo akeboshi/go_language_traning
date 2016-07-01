@@ -1,3 +1,4 @@
+//Copyright (c) 2016 by akeboshi. All Rights Reserved.
 package tempconv
 
 // CToF は摂氏の温度を華氏へ変換します

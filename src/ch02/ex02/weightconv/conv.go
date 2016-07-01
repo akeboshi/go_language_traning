@@ -1,3 +1,4 @@
+//Copyright (c) 2016 by akeboshi. All Rights Reserved.
 package weightconv
 
 // GToP はグラムをポンドへ変換します

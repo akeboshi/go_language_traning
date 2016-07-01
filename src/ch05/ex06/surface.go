@@ -1,3 +1,4 @@
+//Copyright (c) 2016 by akeboshi. All Rights Reserved.
 package main
 
 // copy from ch03/ex01
