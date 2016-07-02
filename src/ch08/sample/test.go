@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"runtime"
 )
 
@@ -24,6 +25,11 @@ func worker(msg string) <-chan string {
 }
 
 func main() {
-	log.Println(runtime.NumGoroutine())
-	select {}
+	uri, err := url.Parse("http://golang.io/")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(uri.Host)
+	//log.Println(runtime.NumGoroutine())
+	//select {}
 }
