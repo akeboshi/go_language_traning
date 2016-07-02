@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/url"
+	"regexp"
 	"runtime"
 )
 
@@ -24,12 +24,17 @@ func worker(msg string) <-chan string {
 	return receiver
 }
 
+//func main() {
+//log.Println(runtime.NumGoroutine())
+//select {}
+//}
 func main() {
-	uri, err := url.Parse("http://golang.io/")
-	if err != nil {
-		log.Fatal(err)
+	str := "abcdefabcieajdlabcdeafbe"
+	expected := "ABCefABCieajdlABCeafbe"
+	rep := regexp.MustCompile(`abcd?`)
+	str = rep.ReplaceAllString(str, "ABC")
+	if str == expected {
+		fmt.Println("OK")
 	}
-	log.Println(uri.Host)
-	//log.Println(runtime.NumGoroutine())
-	//select {}
+	fmt.Println(str)
 }

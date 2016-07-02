@@ -72,8 +72,6 @@ func writeFile(link *url.URL) error {
 	if err != nil {
 		return err
 	}
-	// ここでリンク先をローカルに入れ替える。頑張る。
-	// s/https?://url.Host/\./ みたいな感じ
 
 	if resp.StatusCode != http.StatusOK {
 		return err
@@ -87,6 +85,10 @@ func writeFile(link *url.URL) error {
 		filename = "index.html"
 	}
 	dir := "./" + link.Host + "/" + path[0:strings.LastIndex(path, "/")]
+	// ここでリンク先をローカルに入れ替える。頑張る。
+	// s/https?://url.Host/\./ みたいな感じ
+	// rep := regexp.MustCompile(`href="https?://.+?/`)
+	// body = rep.ReplaceAllString(body, "./../../../みたいなrootに戻る感じ")
 	err = os.MkdirAll(dir, 0777)
 	if err != nil {
 		return err
