@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -85,10 +86,8 @@ func writeFile(link *url.URL) error {
 		filename = "index.html"
 	}
 	dir := "./" + link.Host + "/" + path[0:strings.LastIndex(path, "/")]
-	// ここでリンク先をローカルに入れ替える。頑張る。
-	// s/https?://url.Host/\./ みたいな感じ
-	// rep := regexp.MustCompile(`href="https?://.+?/`)
-	// body = rep.ReplaceAllString(body, "./../../../みたいなrootに戻る感じ")
+	body = goinReplaceRelativePath(body, link)
+
 	err = os.MkdirAll(dir, 0777)
 	if err != nil {
 		return err
@@ -99,6 +98,17 @@ func writeFile(link *url.URL) error {
 	}
 	println("saved: " + dir + "/" + filename)
 	return nil
+}
+
+func goinReplaceRelativePath(body []byte, uri *url.URL) []byte {
+	depth := strings.Count(uri.Path, "/")
+	rep := regexp.MustCompile(`href="https?://` + uri.Host)
+	body = rep.ReplaceAll(body, []byte("href=\""))
+
+	rep = regexp.MustCompile(`href="/`)
+	repl := fmt.Sprintf("href=\"%*s", depth, "../")
+	body = rep.ReplaceAll(body, []byte(repl))
+	return body
 }
 
 func forEachNode(n *html.Node, pre, post func(n *html.Node)) {

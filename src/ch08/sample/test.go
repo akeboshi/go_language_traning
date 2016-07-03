@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"regexp"
 	"runtime"
+	"strings"
 )
 
 func worker(msg string) <-chan string {
@@ -29,12 +31,24 @@ func worker(msg string) <-chan string {
 //select {}
 //}
 func main() {
-	str := "abcdefabcieajdlabcdeafbe"
-	expected := "ABCefABCieajdlABCeafbe"
-	rep := regexp.MustCompile(`abcd?`)
-	str = rep.ReplaceAllString(str, "ABC")
-	if str == expected {
-		fmt.Println("OK")
+	here := "http://aruga.src.jp/foo"
+	hereUrl, _ := url.Parse(here)
+	depth := strings.Count(hereUrl.Path, "/")
+	urls := []string{
+		"href=\"/foo/bar/hoge",                // ../foo/bar/hoge or ./bar/hoge
+		"href=\"./hoge",                       // ./hoge
+		"href=\"http://aruga.src.jp/bar",      // ../bar
+		"href=\"https://aruga.src.jp/foo/bar", // ../foo/bar or ./bar
 	}
-	fmt.Println(str)
+	body := ""
+	for _, url := range urls {
+		body += url + "\n"
+	}
+	rep := regexp.MustCompile(`href="https?://` + hereUrl.Host)
+	body = rep.ReplaceAllString(body, "href=\"")
+
+	rep = regexp.MustCompile(`href="/`)
+	repl := fmt.Sprintf("href=\"%*s", depth, "../")
+	body = rep.ReplaceAllString(body, repl)
+	println(body)
 }

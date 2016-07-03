@@ -6,3 +6,6 @@ src/playroom/*
 src/github.com/*
 src/golang.org/*
 src/gopl.io/*
+src/honnef.co/*
+src/gopkg.in/*
+bin/*
