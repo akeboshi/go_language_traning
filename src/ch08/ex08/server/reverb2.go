@@ -40,13 +40,19 @@ func handleConn(c net.Conn) {
 	input := bufio.NewScanner(c)
 	var wg sync.WaitGroup
 	text := make(chan string)
+	abort := make(chan struct{})
 	go func() {
 		for input.Scan() {
 			text <- input.Text()
 		}
+		abort <- struct{}{}
 	}()
 	for {
 		select {
+		case <-abort:
+			wg.Wait()
+			c.Close()
+			return
 		case <-time.After(10 * time.Second):
 			wg.Wait()
 			c.Close()
