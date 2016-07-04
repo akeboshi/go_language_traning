@@ -36,11 +36,6 @@ func echo(c net.Conn, shout string, delay time.Duration, wg *sync.WaitGroup) {
 	fmt.Fprintln(c, "\t", strings.ToLower(shout))
 }
 
-func closer(c net.Conn, wg *sync.WaitGroup) {
-	wg.Wait()
-	c.Close()
-}
-
 func handleConn(c net.Conn) {
 	input := bufio.NewScanner(c)
 	var wg sync.WaitGroup
@@ -50,12 +45,32 @@ func handleConn(c net.Conn) {
 			text <- input.Text()
 		}
 	}()
-	select {
-	case x := <-text:
-		wg.Add(1)
-		go echo(c, x, 1*time.Second, &wg)
-	case <-time.After(10 * time.Second):
-		// not to do
+	var timeOut sync.WaitGroup
+	done := make(chan struct{})
+	go func() {
+		timeOut.Add(1)
+		go func() {
+			timeOut.Wait()
+			done <- struct{}{}
+		}()
+		<-time.After(10 * time.Second)
+		timeOut.Done()
+	}()
+
+	for {
+		select {
+		case x := <-text:
+			wg.Add(1)
+			go echo(c, x, 1*time.Second, &wg)
+			go func() {
+				timeOut.Add(1)
+				<-time.After(10 * time.Second)
+				timeOut.Done()
+			}()
+
+		case <-done:
+			wg.Wait()
+			c.Close()
+		}
 	}
-	go closer(c, &wg)
 }
