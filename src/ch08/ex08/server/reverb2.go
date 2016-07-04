@@ -45,32 +45,15 @@ func handleConn(c net.Conn) {
 			text <- input.Text()
 		}
 	}()
-	var timeOut sync.WaitGroup
-	done := make(chan struct{})
-	go func() {
-		timeOut.Add(1)
-		go func() {
-			timeOut.Wait()
-			done <- struct{}{}
-		}()
-		<-time.After(10 * time.Second)
-		timeOut.Done()
-	}()
-
 	for {
 		select {
+		case <-time.After(10 * time.Second):
+			wg.Wait()
+			c.Close()
+			return
 		case x := <-text:
 			wg.Add(1)
 			go echo(c, x, 1*time.Second, &wg)
-			go func() {
-				timeOut.Add(1)
-				<-time.After(10 * time.Second)
-				timeOut.Done()
-			}()
-
-		case <-done:
-			wg.Wait()
-			c.Close()
 		}
 	}
 }
