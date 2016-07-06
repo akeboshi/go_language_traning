@@ -44,7 +44,7 @@ func broadcaster() {
 		select {
 		case msg := <-messages:
 			for cli := range clients {
-				cli.ch <- msg
+				go messageSender(cli.ch, msg)
 			}
 		case cli := <-entering:
 			var list []string
@@ -57,7 +57,8 @@ func broadcaster() {
 					"-----------\n" +
 					strings.Join(list, "\n") +
 					"\n-----------"
-				cli.ch <- str
+
+				go messageSender(cli.ch, str)
 			}
 
 		case cli := <-leaving:
@@ -67,17 +68,23 @@ func broadcaster() {
 	}
 }
 
+func messageSender(ch chan<- string, message string) {
+	ch <- message
+}
+
 func handleConn(conn net.Conn) {
 	ch := make(chan string)
 	go clientWriter(conn, ch)
+	who := "no name"
+	input := bufio.NewScanner(conn)
+	if input.Scan() {
+		who = input.Text()
+	}
 
-	who := conn.RemoteAddr().String()
 	ch <- "You are " + who
 	messages <- who + " has arrived"
 	cli := client{ch, who}
 	entering <- cli
-
-	input := bufio.NewScanner(conn)
 
 	alive := make(chan struct{})
 	abort := make(chan struct{})
@@ -107,6 +114,8 @@ func handleConn(conn net.Conn) {
 
 func clientWriter(conn net.Conn, ch <-chan string) {
 	for msg := range ch {
-		fmt.Fprintln(conn, msg)
+		go func(gmsg string) {
+			fmt.Fprintln(conn, gmsg)
+		}(msg)
 	}
 }

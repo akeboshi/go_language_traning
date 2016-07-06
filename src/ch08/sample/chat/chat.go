@@ -8,7 +8,6 @@ import (
 	"log"
 	"net"
 	"strings"
-	"time"
 )
 
 func main() {
@@ -78,31 +77,13 @@ func handleConn(conn net.Conn) {
 	entering <- cli
 
 	input := bufio.NewScanner(conn)
-
-	alive := make(chan struct{})
-	abort := make(chan struct{})
-	go func() {
-		for input.Scan() {
-			messages <- who + ": " + input.Text()
-			alive <- struct{}{}
-		}
-		abort <- struct{}{}
-	}()
-	for {
-		select {
-		case <-time.After(300 * time.Second):
-			leaving <- cli
-			messages <- who + " has left"
-			conn.Close()
-			return
-		case <-abort:
-			leaving <- cli
-			messages <- who + " has left"
-			conn.Close()
-			return
-		case <-alive:
-		}
+	for input.Scan() {
+		messages <- who + ": " + input.Text()
 	}
+
+	leaving <- cli
+	messages <- who + " has left"
+	conn.Close()
 }
 
 func clientWriter(conn net.Conn, ch <-chan string) {
