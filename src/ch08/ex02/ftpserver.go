@@ -119,7 +119,7 @@ func passCommand(op []string, s *status) (string, int, error) {
 	}
 
 	if s.granted {
-		return "You are already authed.", 503, nil
+		return "You are already authed.", 230, nil
 	}
 
 	if len(op) < 1 {
@@ -230,6 +230,7 @@ func retrCommand(op []string, s *status) (string, int, error) {
 	}
 
 	path := filepath.Join(s.path, op[0])
+
 	file, err := os.Open(path)
 	defer file.Close()
 	if err != nil {
