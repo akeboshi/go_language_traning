@@ -29,17 +29,17 @@ func (s *MapIntSet) IntersectWith(t *MapIntSet) {
 			iw[k] = true
 		}
 	}
-	s = &iw
+	*s = iw
 }
 
 func (s *MapIntSet) DifferenceWith(t *MapIntSet) {
 	dw := make(MapIntSet)
-	for k := range *t {
-		if !(*s)[k] {
+	for k := range *s {
+		if !(*t)[k] {
 			dw[k] = true
 		}
 	}
-	s = &dw
+	*s = dw
 }
 
 func (s *MapIntSet) Elems() (list []int) {
@@ -65,7 +65,7 @@ func (s *MapIntSet) String() string {
 	for k := range *s {
 		str += fmt.Sprintf("%d ", k)
 	}
-	strings.TrimSuffix(str, " ")
+	str = strings.TrimSuffix(str, " ")
 	return str + "}"
 }
 
@@ -78,7 +78,7 @@ func (s *MapIntSet) Remove(x int) {
 }
 
 func (s *MapIntSet) Clear() {
-	s = &(MapIntSet{})
+	*s = make(MapIntSet)
 }
 
 func (s *MapIntSet) Copy() *MapIntSet {

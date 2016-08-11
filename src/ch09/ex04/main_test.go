@@ -1,7 +1,5 @@
 // Copyright (c) 2016 by akeboshi. All Rights Reserved.
 
-// seikichiさんのパクりました。一回見たら、これしか思いつかなくなったのでダメでした。なんか思いつけば変えますすｓみません。
-
 package main
 
 import "testing"

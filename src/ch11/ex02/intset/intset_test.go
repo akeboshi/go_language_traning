@@ -2,200 +2,444 @@
 package intset
 
 import (
-	"fmt"
-	"reflect"
+	"math"
+	"math/rand"
+	"sort"
 	"testing"
+	"time"
 )
 
+var setSize int = 200
+
+func BenchmarkAdd(b *testing.B) {
+	seed := time.Now().UTC().UnixNano()
+	b.Logf("Random seed: %d", seed)
+	rng := rand.New(rand.NewSource(seed))
+
+	set := IntSet{}
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < setSize; j++ {
+			set.Add(rng.Intn(math.MaxInt32))
+		}
+		set.Clear()
+	}
+}
+
+func BenchmarkMapAdd(b *testing.B) {
+	seed := time.Now().UTC().UnixNano()
+	b.Logf("Random seed: %d", seed)
+	rng := rand.New(rand.NewSource(seed))
+
+	set := MapIntSet{}
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < setSize; j++ {
+			set.Add(rng.Intn(math.MaxInt32))
+		}
+		set.Clear()
+	}
+}
+
+func TestMapIntSetAdd(t *testing.T) {
+	testData := [][]int{
+		[]int{0, bitSize, bitSize / 2},
+		[]int{0, 2, 100},
+	}
+	for _, td := range testData {
+		set := MapIntSet{}
+		for _, x := range td {
+			set.Add(x)
+		}
+		if set.Len() != len(td) {
+			t.Errorf("MapIntSet Len is unmatch. actual = %d. expected = %d.\n", set.Len(), len(td))
+		}
+		for _, x := range td {
+			if !set.Has(x) {
+				t.Errorf("MapIntSet don't have %q. data = %q\n", x, td)
+			}
+		}
+	}
+}
+
 func TestIntSetAdd(t *testing.T) {
-	data := IntSet{}
-	data.Add(0)
-	checkUint(1, data.words[0], "IntSet.Add(0)", t)
-	data.Add(bitSize)
-	checkUint(1, data.words[1], "IntSet.Add(uintSize)", t)
-	data.Add(bitSize / 2)
-	checkUint(1<<uint(bitSize/2)+1, data.words[0], "IntSet.Add(uintSize/2)", t)
+	testData := [][]int{
+		[]int{0, bitSize, bitSize / 2},
+		[]int{0, 2, 100},
+	}
+	for _, td := range testData {
+		set := IntSet{}
+		for _, x := range td {
+			set.Add(x)
+		}
+		if set.Len() != len(td) {
+			t.Errorf("IntSet Len is unmatch. actual = %d. expected = %d.\n", set.Len(), len(td))
+		}
+		for _, x := range td {
+			if !set.Has(x) {
+				t.Errorf("IntSet don't have %q. data = %q\n", x, td)
+			}
+		}
+	}
 }
 
 func TestIntSetString(t *testing.T) {
-	data := IntSet{}
-	data.Add(0)
-	data.Add(bitSize)
-	data.Add(bitSize / 2)
-	s := fmt.Sprintf("{%d %d %d}", 0, bitSize/2, bitSize)
-	checkString(s, data.String(), "IntSet{0,bitSize/2,bitSize}.String", t)
+	testData := []struct {
+		data     []int
+		expected string
+	}{
+		{
+			[]int{0, 2, 100},
+			"{0 2 100}",
+		},
+	}
+	for _, td := range testData {
+		set := IntSet{}
+		for _, x := range td.data {
+			set.Add(x)
+		}
+		if set.String() != td.expected {
+			t.Errorf("actual = %s \nexpected = %s\n", set.String(), td.expected)
+		}
+	}
 }
 
-func TetIntSetHas(t *testing.T) {
-	data := IntSet{}
-	data.Add(0)
-	data.Add(bitSize)
-	data.Add(bitSize / 2)
-	checkTrue(data.Has(0), "IntSet.Has(0)", t)
-	checkTrue(data.Has(bitSize), "IntSet.Has(bitSize)", t)
-	checkTrue(data.Has(bitSize/2), "IntSet.Has(bitSize/2)", t)
-	checkFalse(data.Has(1), "IntSet.Has(1)", t)
-	checkFalse(data.Has(1000), "IntSet.Has(1000)", t)
-}
-
-func TestIntSetLen(t *testing.T) {
-	data := IntSet{}
-	checkInt(0, data.Len(), "IntSet{NO DATA}.Len()", t)
-	data.Add(0)
-	data.Add(bitSize / 2)
-	data.Add(bitSize)
-	checkInt(3, data.Len(), "IntSet{0,bitSize/2,bitSize}.Len()", t)
+func TestMapIntSetString(t *testing.T) {
+	testData := []struct {
+		data     []int
+		expected string
+	}{
+		{
+			[]int{0, 2, 100},
+			"{0 2 100}",
+		},
+	}
+	for _, td := range testData {
+		set := MapIntSet{}
+		for _, x := range td.data {
+			set.Add(x)
+		}
+		if set.String() != td.expected {
+			t.Errorf("actual = %s \nexpected = %s\n", set.String(), td.expected)
+		}
+	}
 }
 
 func TestIntSetUnionWith(t *testing.T) {
-	data := IntSet{}
-	data.Add(0)
-	data.Add(bitSize)
-	data.Add(bitSize / 2)
+	testData1 := []int{0, bitSize, bitSize / 2}
+	testData2 := []int{1, bitSize + 1, bitSize / 2}
+	expected := []int{0, 1, bitSize, bitSize + 1, bitSize / 2}
+	data1 := IntSet{}
+	for _, td := range testData1 {
+		data1.Add(td)
+	}
 	data2 := IntSet{}
-	data2.Add(1)
-	data2.Add(bitSize + 1)
-	data2.Add(bitSize / 2)
-	data.UnionWith(&data2)
-	checkInt(data.Len(), 5, "UnionWith{0,bitSize/2,bitSize}&{1,bitSize/2,bitSize+1}", t)
-	checkTrues("Has{0,1,bitSize,bitSize+1,bitSize/2}", t,
-		data.Has(0),
-		data.Has(1),
-		data.Has(bitSize),
-		data.Has(bitSize+1),
-		data.Has(bitSize/2))
+	for _, td := range testData2 {
+		data2.Add(td)
+	}
+	data1.UnionWith(&data2)
+	if data1.Len() != len(expected) {
+		t.Errorf("IntSet Len is unmatch. actual = %d. expected = %d.\n", data1.Len(), len(expected))
+	}
+	for _, x := range expected {
+		if !data1.Has(x) {
+			t.Errorf("IntSet don't have %q. data = %q\n", x, expected)
+		}
+	}
+}
+
+func TestMapIntSetUnionWith(t *testing.T) {
+	testData1 := []int{0, bitSize, bitSize / 2}
+	testData2 := []int{1, bitSize + 1, bitSize / 2}
+	expected := []int{0, 1, bitSize, bitSize + 1, bitSize / 2}
+	data1 := MapIntSet{}
+	for _, td := range testData1 {
+		data1.Add(td)
+	}
+	data2 := MapIntSet{}
+	for _, td := range testData2 {
+		data2.Add(td)
+	}
+	data1.UnionWith(&data2)
+	if data1.Len() != len(expected) {
+		t.Errorf("IntSet Len is unmatch. actual = %d. expected = %d.\n", data1.Len(), len(expected))
+	}
+	for _, x := range expected {
+		if !data1.Has(x) {
+			t.Errorf("IntSet don't have %q. data = %q\n", x, expected)
+		}
+	}
+}
+
+func TestMapIntIntersectWith(t *testing.T) {
+	testData1 := []int{0, bitSize, bitSize / 2}
+	testData2 := []int{1, bitSize + 1, bitSize / 2}
+	expected := []int{bitSize / 2}
+	data1 := MapIntSet{}
+	for _, td := range testData1 {
+		data1.Add(td)
+	}
+	data2 := MapIntSet{}
+	for _, td := range testData2 {
+		data2.Add(td)
+	}
+	data1.IntersectWith(&data2)
+	if data1.Len() != len(expected) {
+		t.Errorf("IntSet Len is unmatch. actual = %d. expected = %d. data1 = %q\n", data1.Len(), len(expected), data1.String())
+	}
+	for _, x := range expected {
+		if !data1.Has(x) {
+			t.Errorf("IntSet don't have %q. data = %q\n", x, expected)
+		}
+	}
 }
 
 func TestIntIntersectWith(t *testing.T) {
-	data := IntSet{}
-	data.Add(0)
-	data.Add(bitSize)
-	data.Add(bitSize / 2)
+	testData1 := []int{0, bitSize, bitSize / 2}
+	testData2 := []int{1, bitSize + 1, bitSize / 2}
+	expected := []int{bitSize / 2}
+	data1 := IntSet{}
+	for _, td := range testData1 {
+		data1.Add(td)
+	}
 	data2 := IntSet{}
-	data2.Add(1)
-	data2.Add(bitSize + 1)
-	data2.Add(bitSize / 2)
-	data.IntersectWith(&data2)
-	checkInt(1, data.Len(), "IntersectWith{0,bitSize/2,bitSize}&{1,bitSize/2,bitSize+1}.Len()", t)
-	checkTrues("IntersectWith{0,bitSize/2,bitSize}&{1,bitSize/2,bitSize+1}.Has(biSize/2)", t,
-		data.Has(bitSize/2))
+	for _, td := range testData2 {
+		data2.Add(td)
+	}
+	data1.IntersectWith(&data2)
+	if data1.Len() != len(expected) {
+		t.Errorf("IntSet Len is unmatch. actual = %d. expected = %d. data1 = %q\n", data1.Len(), len(expected), data1.String())
+	}
+	for _, x := range expected {
+		if !data1.Has(x) {
+			t.Errorf("IntSet don't have %q. data = %q\n", x, expected)
+		}
+	}
 }
 
-func TestDifferenceWith(t *testing.T) {
-	data := IntSet{}
-	data.Add(0)
-	data.Add(bitSize)
-	data.Add(bitSize / 2)
+func TestIntDifferentWith(t *testing.T) {
+	testData1 := []int{0, bitSize, bitSize / 2}
+	testData2 := []int{1, bitSize + 1, bitSize / 2}
+	expected := []int{0, bitSize}
+	data1 := IntSet{}
+	for _, td := range testData1 {
+		data1.Add(td)
+	}
 	data2 := IntSet{}
-	data2.Add(1)
-	data2.Add(bitSize + 1)
-	data2.Add(bitSize / 2)
-	data.DifferenceWith(&data2)
-	checkInt(2, data.Len(), "DifferenceWith{0,bitSize/2,bitSize}&{1,bitSize/2,bitSize+1}.Len()", t)
-	checkTrues("DifferenceWith{0,bitSize/2,bitSize}&{1,bitSize/2,bitSize+1}.Has()", t,
-		data.Has(0),
-		data.Has(bitSize))
+	for _, td := range testData2 {
+		data2.Add(td)
+	}
+	data1.DifferenceWith(&data2)
+	if data1.Len() != len(expected) {
+		t.Errorf("IntSet Len is unmatch. actual = %d. expected = %d. data1 = %q\n", data1.Len(), len(expected), data1.String())
+	}
+	for _, x := range expected {
+		if !data1.Has(x) {
+			t.Errorf("IntSet don't have %q. data = %q\n", x, data1.String())
+		}
+	}
 }
 
+func TestMapIntDifferentWith(t *testing.T) {
+	testData1 := []int{0, bitSize, bitSize / 2}
+	testData2 := []int{1, bitSize + 1, bitSize / 2}
+	expected := []int{0, bitSize}
+	data1 := MapIntSet{}
+	for _, td := range testData1 {
+		data1.Add(td)
+	}
+	data2 := MapIntSet{}
+	for _, td := range testData2 {
+		data2.Add(td)
+	}
+	data1.DifferenceWith(&data2)
+	if data1.Len() != len(expected) {
+		t.Errorf("IntSet Len is unmatch. actual = %d. expected = %d. data1 = %q\n", data1.Len(), len(expected), data1.String())
+	}
+	for _, x := range expected {
+		if !data1.Has(x) {
+			t.Errorf("IntSet don't have %d. data = %q\n", x, data1.String())
+		}
+	}
+}
+
+/*
 func TestSymmetricDifferenfce(t *testing.T) {
-	data := IntSet{}
-	data.Add(0)
-	data.Add(bitSize)
-	data.Add(bitSize / 2)
+	testData1 := []int{0, bitSize, bitSize / 2}
+	testData2 := []int{1, bitSize + 1, bitSize / 2}
+	expected := []int{0, 1, bitSize, bitSize + 1}
+	data1 := IntSet{}
+	for _, td := range testData1 {
+		data1.Add(td)
+	}
 	data2 := IntSet{}
-	data2.Add(1)
-	data2.Add(bitSize + 1)
-	data2.Add(bitSize / 2)
-	data.SymmetricDifference(&data2)
-	checkInt(4, data.Len(), "SymmetricDifferenfce{0,bitSize/2,bitSize}&{1,bitSize/2,bitSize+1}.Len()", t)
-	checkTrues("SymmetricDifferenfce{0,bitSize/2,bitSize}&{1,bitSize/2,bitSize+1}.Has()", t,
-		data.Has(0),
-		data.Has(1),
-		data.Has(bitSize+1),
-		data.Has(bitSize))
+	for _, td := range testData2 {
+		data2.Add(td)
+	}
+	data1.SymmetricDifference(&data2)
+	if data1.Len() != len(expected) {
+		t.Errorf("IntSet Len is unmatch. actual = %d. expected = %d. data1 = %q\n", data1.Len(), len(expected), data1.String())
+	}
+	for _, x := range expected {
+		if !data1.Has(x) {
+			t.Errorf("IntSet don't have %d. data = %q\n", x, data1.String())
+		}
+	}
 }
+*/
 
 func TestElems(t *testing.T) {
+	testData1 := []int{0, bitSize / 2, bitSize}
 	data := IntSet{}
-	data.Add(0)
-	data.Add(bitSize)
-	data.Add(bitSize / 2)
-	words := data.Elems()
-	words2 := []int{0, bitSize, bitSize / 2}
-	if !reflect.DeepEqual(words, words) {
-		t.Errorf("actual: %v  expected: %v", words, words2)
+	for _, td := range testData1 {
+		data.Add(td)
+	}
+	actual := data.Elems()
+	if len(actual) != len(testData1) {
+		t.Errorf("IntSet len(IntSet.Elems()) is unmatch. actual = %d. expected = %d. data1 = %q\n", len(actual), len(testData1), data.String())
+	}
+
+	sort.Ints(testData1)
+	sort.Ints(actual)
+	for i := 0; i < len(testData1); i++ {
+		if testData1[i] != actual[i] {
+			t.Errorf("actual = %q, expected = %q", actual, testData1)
+		}
+	}
+}
+
+func TestMapElems(t *testing.T) {
+	testData1 := []int{0, bitSize / 2, bitSize}
+	data := MapIntSet{}
+	for _, td := range testData1 {
+		data.Add(td)
+	}
+	actual := data.Elems()
+	if len(actual) != len(testData1) {
+		t.Errorf("IntSet len(IntSet.Elems()) is unmatch. actual = %d. expected = %d. data1 = %q\n", len(actual), len(testData1), data.String())
+	}
+
+	sort.Ints(testData1)
+	sort.Ints(actual)
+	for i := 0; i < len(testData1); i++ {
+		if testData1[i] != actual[i] {
+			t.Errorf("actual = %q, expected = %q", actual, testData1)
+		}
+	}
+}
+
+func TestMapRemove(t *testing.T) {
+	testData := []int{0, bitSize / 2, bitSize}
+	removeData := []int{bitSize / 2}
+	expected := []int{0, bitSize}
+	data := MapIntSet{}
+	for _, td := range testData {
+		data.Add(td)
+	}
+	for _, rd := range removeData {
+		data.Remove(rd)
+	}
+
+	if data.Len() != len(expected) {
+		t.Errorf("IntSet len is unmatch. actual = %d. expected = %d. data1 = %q\n", data.Len(), len(expected), data.String())
+	}
+
+	for _, x := range expected {
+		if !data.Has(x) {
+			t.Errorf("IntSet don't have %d. data = %q\n", x, data.String())
+		}
 	}
 }
 
 func TestRemove(t *testing.T) {
+	testData := []int{0, bitSize / 2, bitSize}
+	removeData := []int{bitSize / 2}
+	expected := []int{0, bitSize}
 	data := IntSet{}
-	data.Add(0)
-	data.Add(bitSize)
-	data.Add(bitSize / 2)
-	data.Remove(bitSize / 2)
-	checkInt(2, data.Len(), "Removed{0,bitSize}", t)
-	checkTrues("Removed{0,bitSize}", t,
-		data.Has(0),
-		data.Has(bitSize))
+	for _, td := range testData {
+		data.Add(td)
+	}
+	for _, rd := range removeData {
+		data.Remove(rd)
+	}
+
+	if data.Len() != len(expected) {
+		t.Errorf("IntSet len is unmatch. actual = %d. expected = %d. data1 = %q\n", data.Len(), len(expected), data.String())
+	}
+
+	for _, x := range expected {
+		if !data.Has(x) {
+			t.Errorf("IntSet don't have %d. data = %q\n", x, data.String())
+		}
+	}
 }
 
 func TestCopy(t *testing.T) {
+	testData := []int{0, bitSize / 2, bitSize}
+
 	data := IntSet{}
-	data.Add(0)
-	data.Add(bitSize)
-	data.Add(bitSize / 2)
-	copied := data.Copy()
-	if !reflect.DeepEqual(data.words, copied.words) {
-		t.Errorf("actual: %v  expected: %v", data.String(), copied.String())
+	for _, td := range testData {
+		data.Add(td)
 	}
-	data.Add(1)
-	if reflect.DeepEqual(data.words, copied.words) {
-		t.Errorf("not equal actual: %v expected: %v", data.words, copied.words)
+	copied := data.Copy()
+
+	if &data == copied {
+		t.Errorf("Address is coppied.\n")
+	}
+
+	comp1 := copied.Elems()
+	comp2 := testData
+	sort.Ints(comp1)
+	sort.Ints(comp2)
+	for i := 0; i < len(comp1); i++ {
+		if comp1[i] != comp2[i] {
+			t.Errorf("actual = %q, expected = %q", comp1, comp2)
+		}
+	}
+}
+
+func TestMapCopy(t *testing.T) {
+	testData := []int{0, bitSize / 2, bitSize}
+
+	data := MapIntSet{}
+	for _, td := range testData {
+		data.Add(td)
+	}
+	copied := data.Copy()
+
+	if &data == copied {
+		t.Errorf("Address is coppied.\n")
+	}
+
+	comp1 := copied.Elems()
+	comp2 := testData
+	sort.Ints(comp1)
+	sort.Ints(comp2)
+	for i := 0; i < len(comp1); i++ {
+		if comp1[i] != comp2[i] {
+			t.Errorf("actual = %q, expected = %q", comp1, comp2)
+		}
+	}
+}
+
+func TestMapAddAll(t *testing.T) {
+	testData := []int{0, bitSize / 2, bitSize}
+
+	data := MapIntSet{}
+	data.AddAll(testData...)
+	for _, x := range testData {
+		if !data.Has(x) {
+			t.Errorf("IntSet don't have %d. data = %q\n", x, data.String())
+		}
 	}
 }
 
 func TestAddAll(t *testing.T) {
+	testData := []int{0, bitSize / 2, bitSize}
+
 	data := IntSet{}
-	data.AddAll(0, bitSize, bitSize/2)
-	checkInt(3, data.Len(), "AddAll{0,bitSize/2,bitSize}", t)
-	checkTrues("AddAll{0,bitSize/2bitSize}", t,
-		data.Has(0),
-		data.Has(bitSize/2),
-		data.Has(bitSize))
-}
-
-func checkInt(expected, actual int, message string, t *testing.T) {
-	if actual != expected {
-		t.Errorf("%s checkInt Error expected: %d, actual: %d", message, expected, actual)
-	}
-}
-
-func checkString(expected, actual string, message string, t *testing.T) {
-	if actual != expected {
-		t.Errorf("%s checkString Error expected: %s, actual: %s", message, expected, actual)
-	}
-}
-
-func checkUint(expected, actual uint, message string, t *testing.T) {
-	if actual != expected {
-		t.Errorf("%s checkUint Error expected: %d, actual: %d", message, expected, actual)
-	}
-}
-
-func checkFalse(expected bool, message string, t *testing.T) {
-	if expected {
-		t.Errorf("%s checkFalse Error", message)
-	}
-}
-
-func checkTrue(expected bool, message string, t *testing.T) {
-	if !expected {
-		t.Errorf("%s checkTrue Error", message)
-	}
-}
-
-func checkTrues(message string, t *testing.T, expected ...bool) {
-	for _, exp := range expected {
-		checkTrue(exp, message, t)
+	data.AddAll(testData...)
+	for _, x := range testData {
+		if !data.Has(x) {
+			t.Errorf("IntSet don't have %d. data = %q\n", x, data.String())
+		}
 	}
 }
