@@ -40,6 +40,7 @@ var commands = map[string]command{
 	"STRU": struCommand,
 	"RETR": retrCommand,
 	"CWD":  cwdCommand,
+	"LIST": listCommand,
 	"STOR": nil,
 	"NOOP": nil,
 }
@@ -150,12 +151,12 @@ func portCommand(op []string, s *status) (string, int, error) {
 	if len(op) < 1 {
 		return "PORT command is required a parammeter.", 500, nil
 	}
-
-	if len(strings.Split(op[0], ",")) != 6 {
+	ops := strings.Split(op[0], ",")
+	if len(ops) != 6 {
 		return fmt.Sprintf("invalid format: %s", op[0]), 500, nil
 	}
 
-	for _, o := range op {
+	for _, o := range ops[:4] {
 		io, err := strconv.Atoi(o)
 		if err != nil {
 			return "", 500, err
@@ -164,9 +165,9 @@ func portCommand(op []string, s *status) (string, int, error) {
 			return "", 500, nil
 		}
 	}
-	p1, _ := strconv.Atoi(op[4])
-	p2, _ := strconv.Atoi(op[5])
-	s.host = fmt.Sprintf("%s.%s.%s.%s", op[1], op[2], op[3], op[4])
+	p1, _ := strconv.Atoi(ops[4])
+	p2, _ := strconv.Atoi(ops[5])
+	s.host = fmt.Sprintf("%s.%s.%s.%s", ops[1], ops[2], ops[3], ops[4])
 	s.port = p1*256 + p2
 
 	return fmt.Sprintf("Port set %s:%d", s.host, s.port), 200, nil
@@ -269,4 +270,8 @@ func cwdCommand(op []string, s *status) (string, int, error) {
 
 	s.path = path
 	return "Dir is " + path, 250, nil
+}
+
+func listCommand(op []string, s *status) (string, int, error) {
+	return
 }

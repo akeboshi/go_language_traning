@@ -1,0 +1,8 @@
+Dear Alan A. A. Donovan · Brian W. Kernighan,
+
+Please confirm about the following sentence in page 235.
+"The answer is that makeThumbnails returns before it has finished do what it was supposed todo"
+I think "makeThumbnails" is typo, and "makeThumbnails2" is correct.
+
+Best regards,
+Isao Aruga

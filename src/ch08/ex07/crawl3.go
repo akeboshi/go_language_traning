@@ -43,7 +43,6 @@ func main() {
 	for list := range worklist {
 		if list.depth < limitDepth {
 			for _, link := range list.links {
-
 				if !seen[link] {
 					seen[link] = true
 					unseenLinks <- ul{link, list.depth}

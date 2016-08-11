@@ -4,6 +4,7 @@ package main
 
 import (
 	"ch05/ex13/links"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -20,9 +21,10 @@ type ul struct {
 }
 
 func main() {
+	var limitDepth *int = flag.Int("depth", 3, "get with depth")
+	flag.Parse()
 	worklist := make(chan wl)
 	unseenLinks := make(chan ul)
-	limitDepth := 3
 
 	go func() {
 		worklist <- wl{os.Args[1:], 0}
@@ -41,7 +43,7 @@ func main() {
 
 	seen := make(map[string]bool)
 	for list := range worklist {
-		if list.depth < limitDepth {
+		if list.depth < *limitDepth {
 			for _, link := range list.links {
 				if !seen[link] {
 					seen[link] = true

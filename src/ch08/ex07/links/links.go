@@ -15,6 +15,8 @@ import (
 
 func Extract(requestURL string) ([]string, error) {
 	resp, err := http.Get(requestURL)
+	url, _ := url.Parse(requestURL)
+
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +40,9 @@ func Extract(requestURL string) ([]string, error) {
 					continue
 				}
 				link, err := resp.Request.URL.Parse(a.Val)
-				if link.Host == resp.Request.Host {
+				fmt.Printf("link: %s	resp: %s\n", link.Host, url.Host)
+
+				if strings.HasSuffix(link.Host, url.Host) {
 					save(resp, link)
 					if err != nil {
 						continue
