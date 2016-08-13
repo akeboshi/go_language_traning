@@ -1,5 +1,5 @@
 // Copyright (c) 2016 by akeboshi. All Rights Reserved.
-
+// Usage: put zip or tar file in stdin
 package main
 
 import (
