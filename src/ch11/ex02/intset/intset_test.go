@@ -10,9 +10,9 @@ import (
 )
 
 var setSize int = 200
+var	seed = time.Now().UTC().UnixNano()
 
 func BenchmarkAdd(b *testing.B) {
-	seed := time.Now().UTC().UnixNano()
 	b.Logf("Random seed: %d", seed)
 	rng := rand.New(rand.NewSource(seed))
 
@@ -26,7 +26,6 @@ func BenchmarkAdd(b *testing.B) {
 }
 
 func BenchmarkMapAdd(b *testing.B) {
-	seed := time.Now().UTC().UnixNano()
 	b.Logf("Random seed: %d", seed)
 	rng := rand.New(rand.NewSource(seed))
 
