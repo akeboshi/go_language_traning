@@ -1,4 +1,6 @@
 // Copyright (c) 2016 by akeboshi. All Rights Reserved.
+// Usage: ftp -A ftp://localhost:8000/
+
 package main
 
 import (
@@ -11,6 +13,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"io/ioutil"
 )
 
 type response struct {
@@ -84,6 +87,7 @@ func handleConn(conn net.Conn) {
 		message, code, err := handleCommand(line, &s)
 		if err != nil {
 			fmt.Fprintf(conn, "%d %s\r\n", code, err.Error())
+			continue
 		}
 		fmt.Fprintf(conn, "%d %s\r\n", code, message)
 		if code == 221 {
@@ -167,7 +171,7 @@ func portCommand(op []string, s *status) (string, int, error) {
 	}
 	p1, _ := strconv.Atoi(ops[4])
 	p2, _ := strconv.Atoi(ops[5])
-	s.host = fmt.Sprintf("%s.%s.%s.%s", ops[1], ops[2], ops[3], ops[4])
+	s.host = fmt.Sprintf("%s.%s.%s.%s", ops[0], ops[1], ops[2], ops[3])
 	s.port = p1*256 + p2
 
 	return fmt.Sprintf("Port set %s:%d", s.host, s.port), 200, nil
@@ -233,10 +237,12 @@ func retrCommand(op []string, s *status) (string, int, error) {
 	path := filepath.Join(s.path, op[0])
 
 	file, err := os.Open(path)
+
 	defer file.Close()
 	if err != nil {
 		return "", 550, err
 	}
+
 	s.resp <- response{"File ok", 150, nil}
 
 	conn, err := net.Dial("tcp", addr)
@@ -244,6 +250,8 @@ func retrCommand(op []string, s *status) (string, int, error) {
 	if err != nil {
 		return "", 425, err
 	}
+
+
 	io.Copy(conn, file)
 	return "Success receive file", 226, nil
 }
@@ -273,5 +281,45 @@ func cwdCommand(op []string, s *status) (string, int, error) {
 }
 
 func listCommand(op []string, s *status) (string, int, error) {
-	return
+	addr := fmt.Sprintf("%s:%d", s.host, s.port)
+	if addr == ":" {
+		return "Plz set PORT.", 425, nil
+	}
+
+	path := s.path
+	if len(op) > 0{
+		path = filepath.Join(path, op[0])
+	}
+
+	stat, err := os.Stat(path)
+	if err != nil {
+		return s.path+" cant open.",550, err
+	}
+	var str string = ""
+	if stat.IsDir() {
+		dir, err := ioutil.ReadDir(path)
+		if err != nil {
+			return path + "cant read.", 550, err
+		}
+
+		for _, d := range dir {
+			str += d.Name() + " "
+		}
+	} else {
+		str = path
+	}
+	s.resp <- response{"Dir ok", 150, nil}
+
+	conn, err := net.Dial("tcp", addr)
+	defer conn.Close()
+	if err != nil {
+		return "", 425, err
+	}
+
+	_, err = fmt.Fprintf(conn, "%s\r\n", str)
+	if err != nil {
+		return path + "cant send.", 550, err
+	}
+
+	return "Success receive", 250, nil
 }
