@@ -23,6 +23,26 @@ func benchmarkAdd(b *testing.B, size int) {
 	}
 }
 
+/*
+初期化に時間がかかっているので、うまく測れない
+このテストをやる意味は無い？
+// 全てにbitが立っているものに関してテストを行う
+func benchmarkFullBitAdd(b *testing.B, size int) {
+	for i := 0; i < size; i++ {
+		set := IntSet{}
+		set.Add(int(^uint16(0)))
+	}
+}
+
+// 全てにbitが立っていないものに関してテストを行う。
+func benchmarkNoBitAdd(b *testing.B, size int) {
+	for i := 0; i < size; i++ {
+		set := IntSet{}
+		set.Add(0)
+	}
+}
+*/
+
 func BenchmarkAdd100000(b *testing.B)   { benchmarkAdd(b, 100000) }
 func BenchmarkAdd1000000(b *testing.B)  { benchmarkAdd(b, 1000000) }
 func BenchmarkAdd10000000(b *testing.B) { benchmarkAdd(b, 10000000) }
