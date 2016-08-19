@@ -3,8 +3,8 @@ package intset
 
 import (
 	"fmt"
-	"strings"
 	"sort"
+	"strings"
 )
 
 type MapIntSet map[int]bool

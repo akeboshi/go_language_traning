@@ -9,7 +9,8 @@ import (
 	"time"
 )
 
-var	seed = time.Now().UTC().UnixNano()
+var seed = time.Now().UTC().UnixNano()
+
 const max = math.MaxUint16
 
 func benchmarkAdd(b *testing.B, size int) {
@@ -22,9 +23,9 @@ func benchmarkAdd(b *testing.B, size int) {
 	}
 }
 
-func BenchmarkAdd100000(b *testing.B) {benchmarkAdd(b, 100000)}
-func BenchmarkAdd1000000(b *testing.B) {benchmarkAdd(b, 1000000)}
-func BenchmarkAdd10000000(b *testing.B) {benchmarkAdd(b, 10000000)}
+func BenchmarkAdd100000(b *testing.B)   { benchmarkAdd(b, 100000) }
+func BenchmarkAdd1000000(b *testing.B)  { benchmarkAdd(b, 1000000) }
+func BenchmarkAdd10000000(b *testing.B) { benchmarkAdd(b, 10000000) }
 
 func benchmarkMapAdd(b *testing.B, size int) {
 	b.Logf("Random seed: %d", seed)
@@ -36,9 +37,9 @@ func benchmarkMapAdd(b *testing.B, size int) {
 	}
 }
 
-func BenchmarkMapAdd100000(b *testing.B) {benchmarkMapAdd(b, 100000)}
-func BenchmarkMapAdd1000000(b *testing.B) {benchmarkMapAdd(b, 1000000)}
-func BenchmarkMapAdd10000000(b *testing.B) {benchmarkMapAdd(b, 10000000)}
+func BenchmarkMapAdd100000(b *testing.B)   { benchmarkMapAdd(b, 100000) }
+func BenchmarkMapAdd1000000(b *testing.B)  { benchmarkMapAdd(b, 1000000) }
+func BenchmarkMapAdd10000000(b *testing.B) { benchmarkMapAdd(b, 10000000) }
 
 func TestMapIntSetAdd(t *testing.T) {
 	testData := [][]int{
