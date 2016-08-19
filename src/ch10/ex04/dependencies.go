@@ -72,7 +72,8 @@ func main() {
 		for _, p := range needPackages {
 			found := false
 			for _, dep := range wList.Deps {
-				if p.Name == dep {
+
+				if p.ImportPath == dep {
 					found = true
 				}
 			}
@@ -87,6 +88,6 @@ func main() {
 	}
 
 	for _, r := range result {
-		fmt.Println(r.Target)
+		fmt.Println(r.Dir)
 	}
 }
