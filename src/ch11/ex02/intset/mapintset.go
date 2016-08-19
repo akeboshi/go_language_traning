@@ -4,6 +4,7 @@ package intset
 import (
 	"fmt"
 	"strings"
+	"sort"
 )
 
 type MapIntSet map[int]bool
@@ -61,9 +62,15 @@ func (s *MapIntSet) SymmetricDifference(t *MapIntSet) {
 }
 
 func (s *MapIntSet) String() string {
-	str := "{"
+	is := []int{}
 	for k := range *s {
-		str += fmt.Sprintf("%d ", k)
+		is = append(is, k)
+	}
+	sort.Sort(sort.IntSlice(is))
+
+	str := "{"
+	for _, i := range is {
+		str += fmt.Sprintf("%d ", i)
 	}
 	str = strings.TrimSuffix(str, " ")
 	return str + "}"

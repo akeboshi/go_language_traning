@@ -9,34 +9,39 @@ import (
 	"time"
 )
 
-var setSize int = 200
 var	seed = time.Now().UTC().UnixNano()
+const max = math.MaxInt32 // too slow
+//const max = 100000000
 
-func BenchmarkAdd(b *testing.B) {
+
+
+func benchmarkAdd(b *testing.B, size int) {
 	b.Logf("Random seed: %d", seed)
 	rng := rand.New(rand.NewSource(seed))
 
 	set := IntSet{}
-	for i := 0; i < b.N; i++ {
-		for j := 0; j < setSize; j++ {
-			set.Add(rng.Intn(math.MaxInt32))
-		}
-		set.Clear()
+	for i := 0; i < size; i++ {
+		set.Add(rng.Intn(max))
 	}
 }
 
-func BenchmarkMapAdd(b *testing.B) {
+func BenchmarkAdd100(b *testing.B) {benchmarkAdd(b, 100)}
+func BenchmarkAdd1000(b *testing.B) {benchmarkAdd(b, 1000)}
+func BenchmarkAdd10000(b *testing.B) {benchmarkAdd(b, 10000)}
+
+func benchmarkMapAdd(b *testing.B, size int) {
 	b.Logf("Random seed: %d", seed)
 	rng := rand.New(rand.NewSource(seed))
 
 	set := MapIntSet{}
-	for i := 0; i < b.N; i++ {
-		for j := 0; j < setSize; j++ {
-			set.Add(rng.Intn(math.MaxInt32))
-		}
-		set.Clear()
+	for i := 0; i < size; i++ {
+		set.Add(rng.Intn(max))
 	}
 }
+
+func BenchmarkMapAdd100(b *testing.B) {benchmarkMapAdd(b, 100)}
+func BenchmarkMapAdd1000(b *testing.B) {benchmarkMapAdd(b, 1000)}
+func BenchmarkMapAdd10000(b *testing.B) {benchmarkMapAdd(b, 10000)}
 
 func TestMapIntSetAdd(t *testing.T) {
 	testData := [][]int{
@@ -117,7 +122,7 @@ func TestMapIntSetString(t *testing.T) {
 			set.Add(x)
 		}
 		if set.String() != td.expected {
-			t.Errorf("actual = %s \nexpected = %s\n", set.String(), td.expected)
+			t.Errorf("actual =\n%q\nexpected = \n%q\n", set.String(), td.expected)
 		}
 	}
 }
