@@ -1,25 +1,30 @@
-// Copyright © 2016 Alan A. A. Donovan & Brian W. Kernighan.
-// License: https://creativecommons.org/licenses/by-nc-sa/4.0/
-
-package memo_test
+package memo
 
 import (
+	"fmt"
 	"testing"
-
-	"gopl.io/ch9/memo5"
-	"gopl.io/ch9/memotest"
+	"time"
 )
 
-var httpGetBody = memotest.HTTPGetBody
-
 func Test(t *testing.T) {
-	m := memo.New(httpGetBody)
+	m := New(func(key string, cancel <-chan struct{}) (interface{}, error) {
+		<-cancel
+		return nil, fmt.Errorf("canceled")
+	})
 	defer m.Close()
-	memotest.Sequential(t, m)
-}
 
-func TestConcurrent(t *testing.T) {
-	m := memo.New(httpGetBody)
-	defer m.Close()
-	memotest.Concurrent(t, m)
+	cancel := make(chan struct{})
+	results := make(chan result)
+	go func() {
+		v, err := m.Get("foo", cancel)
+		results <- result{v, err}
+	}()
+
+	time.Sleep(100 * time.Millisecond)
+	close(cancel)
+
+	result := <-results
+	if result.value != nil || result.err == nil {
+		t.Errorf("result.value=%v, result.err=%v", result.value, result.err)
+	}
 }

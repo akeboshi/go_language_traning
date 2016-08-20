@@ -9,10 +9,12 @@
 // This implementation uses a monitor goroutine.
 package memo
 
+import "fmt"
+
 //!+Func
 
 // Func is the type of the function to memoize.
-type Func func(key string, done <-chan struct{}) (interface{}, error)
+type Func func(key string, cancel <-chan struct{}) (interface{}, error)
 
 // A result is the result of calling a Func.
 type result struct {
@@ -21,8 +23,9 @@ type result struct {
 }
 
 type entry struct {
-	res   result
-	ready chan struct{} // closed when res is ready
+	res    result
+	ready  chan struct{} // closed when res is ready
+	cached bool
 }
 
 //!-Func
@@ -33,7 +36,7 @@ type entry struct {
 type request struct {
 	key      string
 	response chan<- result // the client wants a single result
-	done     <-chan struct{}
+	cancel   <-chan struct{}
 }
 
 type Memo struct{ requests chan request }
@@ -45,11 +48,15 @@ func New(f Func) *Memo {
 	return memo
 }
 
-func (memo *Memo) Get(key string, done <-chan struct{}) (interface{}, error) {
+func (memo *Memo) Get(key string, cancel <-chan struct{}) (interface{}, error) {
 	response := make(chan result)
-	memo.requests <- request{key, response, done}
-	res := <-response
-	return res.value, res.err
+	memo.requests <- request{key, response, cancel}
+	select {
+	case res := <-response:
+		return res.value, res.err
+	case <-cancel:
+		return nil, fmt.Errorf("canceled")
+	}
 }
 
 func (memo *Memo) Close() { close(memo.requests) }
@@ -62,19 +69,26 @@ func (memo *Memo) server(f Func) {
 	cache := make(map[string]*entry)
 	for req := range memo.requests {
 		e := cache[req.key]
-		if e == nil {
+		if e == nil || e.cached {
 			// This is the first request for this key.
 			e = &entry{ready: make(chan struct{})}
 			cache[req.key] = e
-			go e.call(f, req.key, req.done) // call f(key)
+			go e.call(f, req.key, req.cancel) // call f(key)
 		}
 		go e.deliver(req.response)
 	}
 }
 
-func (e *entry) call(f Func, key string, done <-chan struct{}) {
+func (e *entry) call(f Func, key string, cancel <-chan struct{}) {
 	// Evaluate the function.
-	e.res.value, e.res.err = f(key, done)
+	e.res.value, e.res.err = f(key, cancel)
+
+	select {
+	case <-cancel:
+		e.cached = false
+	default:
+		e.cached = true
+	}
 	// Broadcast the ready condition.
 	close(e.ready)
 }
