@@ -9,3 +9,4 @@ src/gopl.io/*
 src/honnef.co/*
 src/gopkg.in/*
 bin/*
+*debug*
