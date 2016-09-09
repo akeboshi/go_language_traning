@@ -6,10 +6,7 @@ import (
 )
 
 func isCycle(v reflect.Value, seen []unsafe.Pointer) bool {
-	if v.IsNil() {
-		return false
-	}
-	if v.CanAddr() {
+	if v.CanAddr() && v.Kind() != reflect.Array && v.Kind() != reflect.Slice && v.Kind() != reflect.Struct {
 		vptr := unsafe.Pointer(v.UnsafeAddr())
 		for _, p := range seen {
 			if vptr == p {
