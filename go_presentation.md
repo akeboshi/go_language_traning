@@ -8,9 +8,11 @@
 * Ruby
   - 動的型付け
   - 型は書かない！Rubyの信念(matz談)
+    - https://twitter.com/yukihiro_matz/status/773871448435720192
 
 * Go
-  - 8
+  - 静的型付け言語
+  - 
 
 ---
 # 並行処理
@@ -35,9 +37,17 @@ channel
 # 標準ライブラリ (HTTP Server)
 
 ---
-# 標準ライブラリ (JSON Parser)
-* Ruby (標準)
-* Go (標準)
+# 標準ライブラリ (Parser)
+* Ruby (JSON, XML, YAML 標準)
+  簡単！
+  ```
+  require 'json'
+  JSON.parse('{"foo":"bar"}')
+  ```
+* Go (JSON 標準)
+  ```
+  
+  ```
 
 ---
 # Frame Work
