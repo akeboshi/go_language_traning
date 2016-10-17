@@ -12,12 +12,17 @@
 
 * Go
   - 静的型付け言語
-  - 
+  - 型推論はある
 
 ---
 # 並行処理
-channel
-並行処理
+* ruby
+  * thread size 2mb
+* Go
+  * goroutine
+    * stack size 10KB 軽量！ 
+  * CSP(communicating sequential processes)
+  * channel
 
 ---
 # コーディングスタイル
@@ -67,11 +72,11 @@ example
 ---
 # 実行環境
 * Ruby
-  - 環境ごとにRubyをインストールしなければいけない
-  - Versionごとに動作が変わることが多い…
+  - 環境ごとにバージョンにあわせたRubyをインストールしなければいけない
 
 * Go
   - Cross compiler
+  - シングルバイナリで動作する
 
 ---
 # 開発環境 (Editor)
