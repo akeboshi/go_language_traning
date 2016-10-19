@@ -14,7 +14,6 @@ func TestCycle(t *testing.T) {
 	}
 }
 
-// TODO
 func TestNotCycle(t *testing.T) {
 	type link struct {
 		value string
@@ -25,4 +24,9 @@ func TestNotCycle(t *testing.T) {
 	if IsCycle(a) {
 		t.Errorf("expected not cycle,but cycle")
 	}
+}
+
+func TestNotCycleSlice(t *testing.T) {
+	type S
+	a :=
 }
