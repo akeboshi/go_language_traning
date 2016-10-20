@@ -1,10 +1,14 @@
 <!-- $theme: gaia -->
 
-# Ruby ではなくGoLangを使う理由
+# Ruby vs Go
 # RJ Isao Aruga
 
 ---
 # 概要
+1. rubyistの求めること
+2. rubyとgoの良いところ悪いところ
+3. 結論
+
 ---
 # rubyistクラスタの人が求めていること(主観です)
 * 楽しくプログラムをしたい (matzもこれを目指している)
@@ -17,9 +21,12 @@
 * rubyよりも書かなきゃいけないことは多いけど、その分安心して書けるぞ！
 * コンパイル言語だけど、コンパイル速いしその場で実行もできるよ
 * (メタプログラミングはやめよう)
+* rubyが遅いってよく言われてるから、速いGoを使おう
 
 ---
+# Rubyも良いけど
 # Goも良いよ
+# 比較していくよ！
 
 ---
 # 型 
@@ -56,19 +63,9 @@ fmt.Println(str)
 # コーディングスタイル
 * Go
   - go fmt さいつよ。
-    - go format に従うのが標準的
+    - goのformatに従うのが標準的
     - どのプロジェクト見ても同じなので見やすい。
     - 頭空っぽにして従えばいい
-
----
-# 並行処理
-* ruby
-  * thread size 2mb
-* Go
-  * goroutine
-    * stack size 10KB 軽量！ 
-  * CSP(communicating sequential processes)
-  * channel
 
 ---
 # 標準ライブラリ (HTTP Server)
@@ -125,10 +122,14 @@ log.Fatal(http.ListenAndServe("localhost:8000", nil))
 
 ---
 # Test
-test
-coverage
-example
-
+* ruby
+  * rspec
+  * Minitest
+  ちょっと覚えること多くて難しいかなぁ
+* Go
+  * go test
+  標準のテスト。高機能とはいえないけど、覚えること少ないし、coverageやbenchmarkも簡単に取れる。
+  assert書かないのは違和感だけど、慣れる。
 
 ---
 # 実行環境
@@ -153,15 +154,15 @@ example
   - Eclipse? (Eclipse使うならAtomでいい気がする。)
 基本、fmtが標準であるから、何で書いてもいいんじゃないかなー
 ---
-# 開発環境
+# 開発環境(複数バージョン)
 * Ruby
   - rbenv で複数バージョン管理しながら使う
 
 * Go
+  - 簡単には、GOROOTを切り替えてあげれば良い。
+  - gvm というツールで管理する方法もある
   https://github.com/moovweb/gvm#features
-gvm pkgset create --local とすると、実行したディレクトリを gvm の package set にできます。
-その後は、そのディレクトリ以下（サブディレクトリでもよい）で gvm pkgset use --local とすれば gvm がそのディレクトリを $GOPATH に設定してくれます。
-違うバージョンを使う場合は gvm use go1.3.3 && gvm pkgset create --local として最初に local package set を作成すれば、次回からは gvm use go1.3.3 && gvm pkgset use --local とすれば切り替えられます。
+  
 ---
 # 実行速度
 frame workごとに実行速度を比較したサイト
@@ -177,7 +178,6 @@ Goの方が数十倍速い
 Rubyの黒魔術といえば、メタプログラミング。
 メタプログラミングはRubyの特徴的な機能であり、うまく使うことで、Ruby on Railsなどが実装されている。
 ただし、使い方を間違えれば、たちまち何を可読性が落ち、メンテナンスが不可能なコードが出来上がる可能性を秘めた素晴らしい機能である。
-Go言語で言うと、reflectionがギリギリ親しい存在では有るが、Go言語はかなり制限されている。また、使用するときには十分考慮する必要がある。
 
 ---
 # 黒魔術(オープンクラス)
@@ -247,15 +247,66 @@ p "bar".bar
 
 ---
 # 黒魔術
-紹介したのはほんの一部です。
+紹介したのはほんの一部です。(evalとかsendとか・・・メソッドの動的な追加だとか・・・)
 rubyは怖い言語ですね。
 
 ---
-# Reflection
-Go のリフレクションの話を書き足したい。
+# Goのreflect
+高機能ではないが、型を前もって知ることが出来ない場合に、使うことが出来る。
+ただし、次のタイトルのように、使うときはよく考えて使うべき
+
+---
+# The Dark Arts Of Reflection
+みんなのGo第５章の題名です。
+
+動的に型情報を見て、動作は変えられる。
+```golang
+func reflection(v interface{}){
+  vv := reflect.ValueOf(v)
+  switch vv.Kind() {
+  case reflect.Map:
+  ...
+  case ...
+  }
+}
+```
+
+---
+# The Dark Arts Of Reflection
+値を突っ込むことも出来る ※ ポインタを指定する必要はある。
+```golang
+func refl(x interface{}) {
+	v := reflect.ValueOf(x).Elem()
+	if v.Kind() == reflect.Int && v.CanSet() {
+		v.SetInt(100)
+	}
+	println(v.Int())
+}
+```
+基本的にGoはこの程度出来るくらい
+変にメタメタなコードが書かれないので、可読性が落ちにくい(と思う)
+
+---
+# 結論
+Goのほうが良いよ！と書こうと思っていたが、rubyもやっぱりいいところ多いね。
+ただ、速度とか、メタメタなところとか、スタイルあたりに辟易しているのであれば、Golangやってみると楽しいかもしれない！  
+Goだと普通のエディタで書けるからスクリプト言語系の人でもとっつきやすい！
+
 ---
 # Shall we Go?
 ---
+---
+# おまけ
+---
+# 並行処理
+* ruby
+  * thread size 2mb
+* Go
+  * goroutine
+    * stack size 10KB 軽量！ 
+  * CSP(communicating sequential processes)
+  * channel
+  * 
 ---
 # Frame Work
 * Ruby
